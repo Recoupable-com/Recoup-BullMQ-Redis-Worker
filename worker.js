@@ -196,7 +196,7 @@ process.on("SIGTERM", gracefulShutdown);
 
 console.log("📋 BullMQ Worker started");
 console.log("📋 Queue: songs-isrc-processing");
-console.log("📋 Redis:", process.env.REDIS_URL || "redis://localhost:6379");
+console.log("📋 Redis:", process.env.REDIS_URL);
 console.log("📋 NODE_ENV:", process.env.NODE_ENV);
 console.log("📋 Environment variables loaded:", !!process.env.REDIS_URL);
 console.log("📋 Press Ctrl+C to stop");
