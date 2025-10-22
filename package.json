@@ -1,13 +1,25 @@
 {
   "name": "Recoup-BullMQ-Redis-Worker",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Simple BullMQ worker to process prioritized items from Redis queue",
+  "main": "worker.js",
   "scripts": {
+    "start": "node worker.js",
+    "dev": "node --watch worker.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": [
+    "bullmq",
+    "redis",
+    "worker",
+    "queue"
+  ],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@10.9.0"
+  "packageManager": "pnpm@10.9.0",
+  "dependencies": {
+    "bullmq": "^5.61.0",
+    "dotenv": "^17.2.3",
+    "ioredis": "^5.8.2"
+  }
 }
