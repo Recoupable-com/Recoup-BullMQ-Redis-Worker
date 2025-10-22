@@ -60,8 +60,12 @@ jobs:
             fi
 
             # Ensure correct Node.js version
-            source ~/.nvm/nvm.sh
-            nvm use 20
+            if [ -s ~/.nvm/nvm.sh ]; then
+              source ~/.nvm/nvm.sh
+              nvm use 20
+            else
+              echo "Warning: nvm not found, using system Node.js"
+            fi
 
             # Install dependencies
             pnpm install
