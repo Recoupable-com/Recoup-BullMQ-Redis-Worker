@@ -5,45 +5,43 @@ require("dotenv").config();
 const redisUrl = process.env.REDIS_URL;
 console.log("🔧 Environment loaded, Redis URL:", redisUrl);
 
+// Parse Redis URL manually to ensure proper connection
+const url = new URL(redisUrl);
+const redisConfig = {
+  host: url.hostname,
+  port: parseInt(url.port),
+  password: url.password,
+  lazyConnect: true,
+  retryDelayOnFailover: 100,
+};
+
+console.log("🔧 Parsed Redis config:", {
+  host: redisConfig.host,
+  port: redisConfig.port,
+  hasPassword: !!redisConfig.password,
+});
+
 const { Worker, Queue } = require("bullmq");
 const Redis = require("ioredis");
 
-// Redis connection for Worker (BullMQ requires maxRetriesPerRequest: null)
-const workerRedisConnection = new Redis({
-  url: redisUrl,
-  lazyConnect: true,
-  retryDelayOnFailover: 100,
+// Single Redis connection for everything
+const redisConnection = new Redis({
+  ...redisConfig,
   maxRetriesPerRequest: null, // Required for BullMQ Worker
 });
 
 // Add connection event handlers for debugging
-workerRedisConnection.on("connect", () => {
-  console.log("🔗 Worker Redis connected");
+redisConnection.on("connect", () => {
+  console.log("🔗 Redis connected");
 });
 
-workerRedisConnection.on("error", (err) => {
-  console.error("❌ Worker Redis error:", err.message);
-});
-
-// Redis connection for Queue inspection (can use maxRetriesPerRequest: 3)
-const queueRedisConnection = new Redis({
-  url: redisUrl,
-  lazyConnect: true,
-  retryDelayOnFailover: 100,
-  maxRetriesPerRequest: 3, // Matches your API
-});
-
-queueRedisConnection.on("connect", () => {
-  console.log("🔗 Queue Redis connected");
-});
-
-queueRedisConnection.on("error", (err) => {
-  console.error("❌ Queue Redis error:", err.message);
+redisConnection.on("error", (err) => {
+  console.error("❌ Redis error:", err.message);
 });
 
 // Create queue instance to inspect jobs
 const queue = new Queue("songs-isrc-processing", {
-  connection: queueRedisConnection,
+  connection: redisConnection,
 });
 
 // Create a worker to inspect jobs (without processing them)
@@ -61,7 +59,7 @@ const worker = new Worker(
     };
   },
   {
-    connection: workerRedisConnection,
+    connection: redisConnection,
     concurrency: 1, // Process one at a time for inspection
   }
 );
@@ -172,18 +170,11 @@ async function gracefulShutdown() {
   }
 
   try {
-    // Close Redis connections
-    await workerRedisConnection.quit();
-    console.log("✅ Worker Redis connection closed");
+    // Close Redis connection
+    await redisConnection.quit();
+    console.log("✅ Redis connection closed");
   } catch (error) {
-    console.log("⚠️ Worker Redis connection already closed");
-  }
-
-  try {
-    await queueRedisConnection.quit();
-    console.log("✅ Queue Redis connection closed");
-  } catch (error) {
-    console.log("⚠️ Queue Redis connection already closed");
+    console.log("⚠️ Redis connection already closed");
   }
 
   console.log("👋 Shutdown complete");
