@@ -2,7 +2,7 @@
 require("dotenv").config();
 
 // Verify environment is loaded
-const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
+const redisUrl = process.env.REDIS_URL;
 console.log("🔧 Environment loaded, Redis URL:", redisUrl);
 
 const { Worker, Queue } = require("bullmq");
