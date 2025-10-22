@@ -1,21 +1,44 @@
+// Load environment variables first
 require("dotenv").config();
+
+// Verify environment is loaded
+const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
+console.log("🔧 Environment loaded, Redis URL:", redisUrl);
+
 const { Worker, Queue } = require("bullmq");
 const Redis = require("ioredis");
 
 // Redis connection for Worker (BullMQ requires maxRetriesPerRequest: null)
 const workerRedisConnection = new Redis({
-  url: process.env.REDIS_URL || "redis://localhost:6379",
+  url: redisUrl,
   lazyConnect: true,
   retryDelayOnFailover: 100,
   maxRetriesPerRequest: null, // Required for BullMQ Worker
 });
 
+// Add connection event handlers for debugging
+workerRedisConnection.on("connect", () => {
+  console.log("🔗 Worker Redis connected");
+});
+
+workerRedisConnection.on("error", (err) => {
+  console.error("❌ Worker Redis error:", err.message);
+});
+
 // Redis connection for Queue inspection (can use maxRetriesPerRequest: 3)
 const queueRedisConnection = new Redis({
-  url: process.env.REDIS_URL || "redis://localhost:6379",
+  url: redisUrl,
   lazyConnect: true,
   retryDelayOnFailover: 100,
   maxRetriesPerRequest: 3, // Matches your API
+});
+
+queueRedisConnection.on("connect", () => {
+  console.log("🔗 Queue Redis connected");
+});
+
+queueRedisConnection.on("error", (err) => {
+  console.error("❌ Queue Redis error:", err.message);
 });
 
 // Create queue instance to inspect jobs
@@ -174,4 +197,6 @@ process.on("SIGTERM", gracefulShutdown);
 console.log("📋 BullMQ Worker started");
 console.log("📋 Queue: songs-isrc-processing");
 console.log("📋 Redis:", process.env.REDIS_URL || "redis://localhost:6379");
+console.log("📋 NODE_ENV:", process.env.NODE_ENV);
+console.log("📋 Environment variables loaded:", !!process.env.REDIS_URL);
 console.log("📋 Press Ctrl+C to stop");
