@@ -40,13 +40,17 @@ redisConnection.on("error", (err) => {
 });
 
 // Create queue instance to inspect jobs
-const queue = new Queue("songs-isrc-processing", {
+const queueName =
+  process.env.NODE_ENV === "development"
+    ? "dev-songs-isrc-processing"
+    : "songs-isrc-processing";
+const queue = new Queue(queueName, {
   connection: redisConnection,
 });
 
 // Create a worker to inspect jobs (without processing them)
 const worker = new Worker(
-  "songs-isrc-processing",
+  queueName,
   async (job) => {
     // Just log the job and return without processing
     console.log(`👀 Inspected job: ${job.data.isrc}`);
@@ -122,9 +126,7 @@ worker.on("ready", async () => {
 });
 
 worker.on("active", (job) => {
-  console.log(
-    `🔄 Inspecting: ${job.data.isrc} - ${job.data.songData?.name || "Unknown"}`
-  );
+  console.log(`🔄 Inspecting: ${job.data.isrc}`);
 });
 
 worker.on("completed", (job, result) => {
@@ -186,7 +188,7 @@ process.on("SIGINT", gracefulShutdown);
 process.on("SIGTERM", gracefulShutdown);
 
 console.log("📋 BullMQ Worker started");
-console.log("📋 Queue: songs-isrc-processing");
+console.log("📋 Queue:", queueName);
 console.log("📋 Redis:", process.env.REDIS_URL);
 console.log("📋 NODE_ENV:", process.env.NODE_ENV);
 console.log("📋 Environment variables loaded:", !!process.env.REDIS_URL);
