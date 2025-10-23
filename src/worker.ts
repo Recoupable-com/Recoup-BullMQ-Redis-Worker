@@ -25,7 +25,7 @@ redisConnection.on("error", (err) => {
 const queue = getQueue();
 const queueName = queue.name;
 
-// Create a worker to inspect jobs (without processing them)
+// Create a worker to process ISRC jobs
 const worker = getWorker();
 
 // Event listeners
@@ -51,11 +51,16 @@ worker.on("ready", async () => {
 });
 
 worker.on("active", (job) => {
-  console.log(`🔄 Inspecting: ${job.data.isrc}`);
+  console.log(`🔄 Processing: ${job.data.isrc}`);
 });
 
-worker.on("completed", (job) => {
-  console.log(`✅ Inspected: ${job.data.isrc}`);
+worker.on("completed", (job, result) => {
+  console.log(`✅ Successfully processed: ${job.data.isrc}`);
+  if (result.trackData) {
+    console.log(
+      `🎵 Track: ${result.trackData.name} - ${result.trackData.album}`
+    );
+  }
 
   // Delete the completed job so it can be re-added
   job
@@ -87,7 +92,7 @@ worker.on("error", (err) => {
 process.on("SIGINT", () => gracefulShutdown(worker, queue, redisConnection));
 process.on("SIGTERM", () => gracefulShutdown(worker, queue, redisConnection));
 
-console.log("📋 BullMQ Worker started");
+console.log("🎵 BullMQ ISRC Processing Worker started");
 console.log("📋 Queue:", queueName);
 console.log("📋 Redis:", process.env.REDIS_URL);
 console.log("📋 NODE_ENV:", process.env.NODE_ENV);
