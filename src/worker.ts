@@ -7,6 +7,7 @@ import { getWorker } from "./redis/getWorker";
 import { cleanupCompletedJobs } from "./redis/cleanupCompletedJobs";
 import { showQueueStatus } from "./redis/showQueueStatus";
 import { gracefulShutdown } from "./redis/gracefulShutdown";
+import { addTestJobs } from "./test/addTestJobs";
 
 // Single Redis connection for everything
 const redisConnection = createRedisConnection();
@@ -30,6 +31,13 @@ const worker = getWorker();
 // Event listeners
 worker.on("ready", async () => {
   console.log("🚀 Worker is ready and waiting for jobs...");
+
+  // Add test jobs in development mode
+  if (process.env.NODE_ENV === "development") {
+    console.log("🔧 Development mode detected - adding test jobs...");
+    await addTestJobs();
+  }
+
   await cleanupCompletedJobs(queue); // Clean up any existing completed jobs first
   await showQueueStatus(queue);
 
@@ -43,9 +51,7 @@ worker.on("ready", async () => {
 });
 
 worker.on("active", (job) => {
-  console.log(
-    `🔄 Inspecting: ${job.data.isrc} - ${job.data.songData?.name || "Unknown"}`
-  );
+  console.log(`🔄 Inspecting: ${job.data.isrc}`);
 });
 
 worker.on("completed", (job) => {
