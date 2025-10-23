@@ -72,5 +72,11 @@ jobs:
             # Build TypeScript
             pnpm run build
 
-            # Restart the application with PM2
-            pm2 restart ecosystem.config.cjs --update-env
+            # Stop the current PM2 process
+            pm2 stop recoup-bullmq-worker || true
+
+            # Delete the old PM2 process
+            pm2 delete recoup-bullmq-worker || true
+
+            # Start the application with the new configuration
+            pm2 start ecosystem.config.cjs
