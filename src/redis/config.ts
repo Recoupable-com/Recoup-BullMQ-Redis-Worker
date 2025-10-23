@@ -1,6 +1,12 @@
 import Redis from "ioredis";
-import { RedisConfig } from "../types";
 
+export interface RedisConfig {
+  host: string;
+  port: number;
+  password: string;
+  lazyConnect: boolean;
+  retryDelayOnFailover: number;
+}
 /**
  * Creates a Redis configuration from environment variables
  */

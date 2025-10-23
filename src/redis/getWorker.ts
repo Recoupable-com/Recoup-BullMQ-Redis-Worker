@@ -1,7 +1,12 @@
 import { Worker } from "bullmq";
-import { JobResult } from "../types";
 import { createRedisConnection } from "./config";
 import { getQueueName } from "./getQueueName";
+
+export interface JobResult {
+  inspected: boolean;
+  jobId: string;
+  timestamp: string;
+}
 
 /**
  * Creates a BullMQ Worker instance with proper configuration
