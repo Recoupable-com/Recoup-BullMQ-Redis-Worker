@@ -69,5 +69,8 @@ jobs:
             # Install dependencies
             pnpm install
 
-            # Restart the application
+            # Build TypeScript
+            pnpm run build
+
+            # Restart the application with PM2
             pm2 restart ecosystem.config.cjs --update-env
