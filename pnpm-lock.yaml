@@ -20,6 +20,9 @@ importers:
       ioredis:
         specifier: ^5.8.2
         version: 5.8.2
+      zod:
+        specifier: ^4.1.12
+        version: 4.1.12
     devDependencies:
       '@types/node':
         specifier: ^20.19.23
