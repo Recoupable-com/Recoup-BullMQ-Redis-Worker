@@ -1,4 +1,8 @@
-import { getPerplexityApiKey, getPerplexityHeaders, PERPLEXITY_BASE_URL } from "./config";
+import {
+  getPerplexityApiKey,
+  getPerplexityHeaders,
+  PERPLEXITY_BASE_URL,
+} from "./config";
 
 export interface SearchResult {
   title: string;
@@ -32,8 +36,8 @@ export async function searchPerplexity(
     max_results: params.max_results || 10,
     max_tokens_per_page: params.max_tokens_per_page || 1024,
     ...(params.country && { country: params.country }),
-    ...(params.search_domain_filter && { 
-      search_domain_filter: params.search_domain_filter 
+    ...(params.search_domain_filter && {
+      search_domain_filter: params.search_domain_filter,
     }),
   };
 
@@ -51,9 +55,9 @@ export async function searchPerplexity(
       );
     }
 
-    return await response.json();
+    const data = (await response.json()) as SearchResponse;
+    return data;
   } catch (error) {
     throw new Error(`Failed to search Perplexity API: ${error}`);
   }
 }
-
