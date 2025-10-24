@@ -72,7 +72,7 @@ Explicit: ${trackInfo.explicit ? "Yes" : "No"}`;
     tools: {
       searchWeb: getSearchWebTool(),
     },
-    stopWhen: stepCountIs(3),
+    stopWhen: stepCountIs(11),
   });
   console.log("Generated notes:", text);
 
