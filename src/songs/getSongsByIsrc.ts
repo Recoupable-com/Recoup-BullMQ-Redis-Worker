@@ -1,5 +1,6 @@
 import getIsrc from "../spotify/getIsrc";
 import { generateTrackNotes } from "./generateTrackNotes";
+import { upsertSongs } from "../supabase/songs/upsertSongs";
 
 export type ProcessedIsrcResult = {
   isrc: string;
@@ -29,6 +30,17 @@ const getSongsByIsrc = async (
         const notes = await generateTrackNotes(track);
 
         spotifyTrackByIsrc.set(isrc, notes);
+
+        // Upsert immediately after generating notes
+        try {
+          await upsertSongs([{ isrc, notes }]);
+          console.log(`✅ Successfully upserted song: ${isrc}`);
+        } catch (error) {
+          console.error(
+            `❌ Error upserting song ${isrc}:`,
+            (error as Error).message
+          );
+        }
       }
     })
   );
