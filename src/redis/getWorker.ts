@@ -30,7 +30,6 @@ export function getWorker(): Worker {
         // Process the ISRC using getSongsByIsrc
         const results = await getSongsByIsrc([isrc]);
         const result = results[0]; // Get the first (and only) result
-        console.log(result);
         return {
           inspected: true,
           jobId: job.id!,
