@@ -1,4 +1,6 @@
-import { JobData } from "../types";
+export interface JobData {
+  isrc: string;
+}
 
 /**
  * Test job data for development and testing purposes

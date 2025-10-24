@@ -1,7 +1,16 @@
 import { Worker } from "bullmq";
-import { JobResult } from "../types";
 import { createRedisConnection } from "./config";
 import { getQueueName } from "./getQueueName";
+import getSongsByIsrc from "../songs/getSongsByIsrc";
+
+export interface JobResult {
+  inspected: boolean;
+  jobId: string;
+  timestamp: string;
+  processed?: boolean;
+  trackData?: any;
+  error?: string;
+}
 
 /**
  * Creates a BullMQ Worker instance with proper configuration
@@ -14,19 +23,38 @@ export function getWorker(): Worker {
   return new Worker(
     queueName,
     async (job): Promise<JobResult> => {
-      // Just log the job and return without processing
-      console.log(`👀 Inspected job: ${job.data.isrc}`);
+      const isrc = job.data.isrc;
+      console.log(`🔄 Processing job: ${isrc}`);
 
-      // Return the job data without processing
-      return {
-        inspected: true,
-        jobId: job.id!,
-        timestamp: new Date().toISOString(),
-      };
+      try {
+        // Process the ISRC using getSongsByIsrc
+        const results = await getSongsByIsrc([isrc]);
+        const result = results[0]; // Get the first (and only) result
+        console.log(result);
+        return {
+          inspected: true,
+          jobId: job.id!,
+          timestamp: new Date().toISOString(),
+          processed: true,
+          trackData: result,
+        };
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
+        console.error(`❌ Job processing failed for ${isrc}:`, errorMessage);
+
+        return {
+          inspected: true,
+          jobId: job.id!,
+          timestamp: new Date().toISOString(),
+          processed: false,
+          error: errorMessage,
+        };
+      }
     },
     {
       connection: redisConnection,
-      concurrency: 1, // Process one at a time for inspection
+      concurrency: 1, // Process one at a time
     }
   );
 }
