@@ -19,6 +19,7 @@
   "license": "ISC",
   "packageManager": "pnpm@10.9.0",
   "dependencies": {
+    "ai": "^5.0.78",
     "bullmq": "^5.61.0",
     "dotenv": "^17.2.3",
     "ioredis": "^5.8.2"
