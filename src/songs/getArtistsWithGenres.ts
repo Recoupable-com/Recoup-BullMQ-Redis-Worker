@@ -1,6 +1,5 @@
 import { SpotifyTrack } from "../types/spotify.types";
 import getArtist from "../spotify/getArtist";
-import generateAccessToken from "../spotify/generateAccessToken";
 
 /**
  * Fetches artist details with genres for all artists in a track
@@ -10,15 +9,8 @@ import generateAccessToken from "../spotify/generateAccessToken";
 export const getArtistsWithGenres = async (
   track: SpotifyTrack
 ): Promise<string> => {
-  const tokenResult = await generateAccessToken();
-  if (!tokenResult.access_token || tokenResult.error) {
-    throw tokenResult.error ?? new Error("Failed to generate Spotify token");
-  }
-
   // Fetch artist details in parallel
-  const artistPromises = track.artists.map((artist) =>
-    getArtist(artist.id, tokenResult.access_token)
-  );
+  const artistPromises = track.artists.map((artist) => getArtist(artist.id));
   const artistResults = await Promise.all(artistPromises);
 
   // Create artist-genre pairs from successful fetches
